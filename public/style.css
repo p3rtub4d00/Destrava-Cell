@@ -1,39 +1,48 @@
-/* Reset e Variáveis */
+/* =========================================
+   RESET E VARIÁVEIS GLOBAIS
+   ========================================= */
 :root {
-    --bg-color: #0f0f0f;
-    --card-bg: #1a1a1a;
-    --primary-color: #00ff88; /* Verde Neon */
-    --secondary-color: #00d4ff; /* Azul Neon */
-    --text-color: #ffffff;
-    --text-muted: #b3b3b3;
+    --bg-color: #0f0f0f;       /* Fundo quase preto */
+    --card-bg: #1a1a1a;        /* Fundo dos cards */
+    --primary-color: #00ff88;  /* Verde Neon (Destaque Principal) */
+    --secondary-color: #00d4ff;/* Azul Neon (Destaque Secundário) */
+    --text-color: #ffffff;     /* Texto Branco */
+    --text-muted: #b3b3b3;     /* Texto Cinza */
     --font-main: 'Poppins', sans-serif;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
     font-family: var(--font-main);
     line-height: 1.6;
-    overflow-x: hidden;
+    overflow-x: hidden; /* Evita rolagem lateral indesejada */
 }
 
 a { text-decoration: none; color: inherit; }
 ul { list-style: none; }
 
-/* Navbar */
+/* =========================================
+   NAVBAR (Menu Superior)
+   ========================================= */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 20px 5%;
-    background: rgba(15, 15, 15, 0.95);
+    background: rgba(15, 15, 15, 0.95); /* Fundo translúcido */
     position: fixed;
     width: 100%;
     top: 0;
     z-index: 1000;
     border-bottom: 1px solid #333;
+    backdrop-filter: blur(10px); /* Efeito de desfoque atrás do menu */
 }
 
 .logo {
@@ -49,16 +58,24 @@ ul { list-style: none; }
 .nav-links li a { font-size: 0.9rem; transition: 0.3s; }
 .nav-links li a:hover { color: var(--primary-color); }
 
+/* Botão de Contato no Menu */
 .btn-nav {
     border: 1px solid var(--primary-color);
     padding: 8px 20px;
     border-radius: 50px;
     color: var(--primary-color) !important;
+    transition: 0.3s;
 }
 
-.btn-nav:hover { background: var(--primary-color); color: #000 !important; }
+.btn-nav:hover {
+    background: var(--primary-color);
+    color: #000 !important;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+}
 
-/* Hero Section */
+/* =========================================
+   HERO SECTION (Topo com Imagem de Fundo)
+   ========================================= */
 .hero {
     height: 100vh;
     display: flex;
@@ -66,15 +83,30 @@ ul { list-style: none; }
     justify-content: center;
     text-align: center;
     padding: 0 20px;
-    background: radial-gradient(circle at top center, #1a2e25 0%, #0f0f0f 70%);
     position: relative;
     padding-top: 80px;
+
+    /* --- CONFIGURAÇÃO DA IMAGEM DE FUNDO --- */
+    /* O gradiente rgba(0,0,0,0.85) cria a camada escura por cima da foto */
+    /* Substitua 'fundo-hero.jpg' pelo nome da sua imagem gerada */
+    background: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('fundo-hero.jpg');
+    
+    background-size: cover;      /* Cobre toda a tela */
+    background-position: center; /* Centraliza a imagem */
+    background-repeat: no-repeat;
+    background-attachment: fixed; /* Efeito parallax (opcional) */
+}
+
+.hero-content {
+    z-index: 2; /* Garante que o texto fique acima do fundo */
+    max-width: 800px;
 }
 
 .hero h1 {
     font-size: 3rem;
     line-height: 1.2;
     margin-bottom: 20px;
+    font-weight: 700;
 }
 
 .highlight-text {
@@ -85,11 +117,12 @@ ul { list-style: none; }
 
 .hero p {
     font-size: 1.1rem;
-    color: var(--text-muted);
+    color: var(--text-muted); /* Cinza claro para leitura */
     max-width: 600px;
     margin: 0 auto 40px;
 }
 
+/* Botões de Ação (CTA) */
 .cta-buttons {
     display: flex;
     gap: 15px;
@@ -107,11 +140,14 @@ ul { list-style: none; }
     display: inline-flex;
     align-items: center;
     gap: 10px;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
 }
 
 .btn-primary:hover {
     transform: translateY(-3px);
-    box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+    box-shadow: 0 0 25px rgba(0, 255, 136, 0.5); /* Brilho verde neon */
 }
 
 .btn-secondary {
@@ -124,10 +160,19 @@ ul { list-style: none; }
     transition: 0.3s;
 }
 
-.btn-secondary:hover { border-color: #fff; background: rgba(255, 255, 255, 0.1); }
+.btn-secondary:hover {
+    border-color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
 
-/* Services */
-.services { padding: 100px 5%; }
+/* =========================================
+   SERVIÇOS (Grid de Cards)
+   ========================================= */
+.services {
+    padding: 100px 5%;
+    background: var(--bg-color);
+}
+
 .container { max-width: 1200px; margin: 0 auto; }
 
 .section-title {
@@ -135,6 +180,7 @@ ul { list-style: none; }
     font-size: 2rem;
     margin-bottom: 60px;
     position: relative;
+    color: #fff;
 }
 
 .section-title::after {
@@ -143,9 +189,10 @@ ul { list-style: none; }
     height: 3px;
     background: var(--primary-color);
     position: absolute;
-    bottom: -10px;
+    bottom: -15px;
     left: 50%;
     transform: translateX(-50%);
+    box-shadow: 0 0 10px var(--primary-color);
 }
 
 .cards-grid {
@@ -156,33 +203,46 @@ ul { list-style: none; }
 
 .card {
     background: var(--card-bg);
-    padding: 30px;
+    padding: 40px 30px;
     border-radius: 15px;
     border: 1px solid #333;
     transition: 0.3s;
     text-align: center;
+    position: relative;
+    overflow: hidden;
 }
 
+/* Efeito Hover no Card */
 .card:hover {
     border-color: var(--secondary-color);
-    transform: translateY(-5px);
+    transform: translateY(-10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .icon-box {
     font-size: 2.5rem;
-    color: var(--secondary-color);
+    color: var(--primary-color); /* Ícone verde */
     margin-bottom: 20px;
+    transition: 0.3s;
 }
 
-.card h3 { margin-bottom: 15px; }
+.card:hover .icon-box {
+    color: var(--secondary-color); /* Muda para azul ao passar o mouse */
+    transform: scale(1.1);
+}
+
+.card h3 { margin-bottom: 15px; color: #fff; }
 .card p { color: var(--text-muted); font-size: 0.9rem; }
 
-/* Buy Section */
+/* =========================================
+   SEÇÃO DE VENDA (Compra de Aparelhos)
+   ========================================= */
 .buy-phone {
-    background: linear-gradient(45deg, #111, #1a1a1a);
+    background: linear-gradient(135deg, #111, #1a1a1a);
     padding: 80px 5%;
     border-top: 1px solid #333;
     border-bottom: 1px solid #333;
+    position: relative;
 }
 
 .buy-container {
@@ -192,17 +252,40 @@ ul { list-style: none; }
     gap: 50px;
 }
 
-.buy-text h2 { font-size: 2rem; margin-bottom: 20px; }
-.buy-list { margin-bottom: 30px; }
-.buy-list li { margin-bottom: 10px; font-size: 1.1rem; }
-.buy-list i { color: var(--primary-color); margin-right: 10px; }
-
-.buy-icon {
-    font-size: 8rem;
-    color: #333;
-    text-shadow: 0 0 50px rgba(0, 255, 136, 0.1);
+.buy-text h2 {
+    font-size: 2.2rem;
+    margin-bottom: 20px;
 }
 
+.buy-list { margin-bottom: 40px; }
+
+.buy-list li {
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+}
+
+.buy-list i {
+    color: var(--primary-color);
+    margin-right: 15px;
+    font-size: 1.2rem;
+}
+
+.buy-icon {
+    font-size: 10rem;
+    color: #222;
+    text-shadow: 0 0 60px rgba(0, 255, 136, 0.15); /* Sombra suave verde */
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+    100% { transform: translateY(0px); }
+}
+
+/* Animação de Pulso no Botão */
 .pulsing {
     animation: pulse-green 2s infinite;
 }
@@ -213,36 +296,72 @@ ul { list-style: none; }
     100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
 }
 
-/* Footer */
+/* =========================================
+   FOOTER (Rodapé)
+   ========================================= */
 footer {
-    padding: 50px 20px;
+    padding: 60px 20px;
     text-align: center;
-    background: #000;
+    background: #050505;
+    border-top: 1px solid #222;
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .footer-logo {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 700;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    color: #fff;
 }
 
-.socials { margin: 20px 0; }
+.socials { margin: 25px 0; }
 .socials a {
-    color: #fff;
-    font-size: 1.5rem;
-    margin: 0 10px;
+    color: #888;
+    font-size: 1.6rem;
+    margin: 0 15px;
     transition: 0.3s;
 }
 
-.socials a:hover { color: var(--primary-color); }
-.copyright { color: #555; font-size: 0.8rem; }
+.socials a:hover {
+    color: var(--primary-color);
+    transform: translateY(-3px);
+}
 
-/* Mobile Responsive */
-.menu-toggle { display: none; font-size: 1.5rem; cursor: pointer; }
+.copyright { color: #444; font-size: 0.8rem; }
+
+/* =========================================
+   RESPONSIVO (Mobile)
+   ========================================= */
+.menu-toggle { display: none; font-size: 1.5rem; cursor: pointer; color: #fff; }
 
 @media (max-width: 768px) {
-    .nav-links { display: none; } /* Simples para esta versão */
+    .navbar { padding: 15px 20px; }
+    
+    /* Esconde links no mobile por enquanto para simplificar */
+    .nav-links {
+        display: none; 
+        /* Para um menu completo mobile seria necessário JS extra */
+    }
+    
+    .menu-toggle { display: block; } /* Ícone de hambúrguer */
+
     .hero h1 { font-size: 2rem; }
-    .buy-container { flex-direction: column; text-align: center; }
-    .buy-icon { display: none; }
+    
+    .buy-container {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .buy-list li {
+        justify-content: center;
+    }
+    
+    .buy-icon { display: none; } /* Esconde o ícone grande no mobile */
+    
+    .card { padding: 30px 20px; }
 }
