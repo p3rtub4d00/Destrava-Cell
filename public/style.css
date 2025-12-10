@@ -80,7 +80,7 @@ ul { list-style: none; }
     padding: 0 20px;
     position: relative;
     padding-top: 80px;
-
+    
     /* Imagem de fundo com camada escura */
     background: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('fundo-hero.jpg');
     background-size: cover;
@@ -274,6 +274,62 @@ ul { list-style: none; }
 }
 
 /* =========================================
+   FAQ (PERGUNTAS FREQUENTES)
+   ========================================= */
+.faq-section {
+    padding: 80px 5%;
+    background: #0a0a0a;
+}
+
+.faq-item {
+    background: var(--card-bg);
+    border: 1px solid #333;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: 0.3s;
+}
+
+.faq-question {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.faq-question h3 {
+    font-size: 1.1rem;
+    color: #fff;
+    font-weight: 500;
+}
+
+.faq-question i {
+    color: var(--primary-color);
+    transition: 0.3s;
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.faq-answer p {
+    padding: 20px;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    border-top: 1px solid #333;
+}
+
+.faq-item.active .faq-answer { max-height: 200px; }
+.faq-item.active .faq-question i { transform: rotate(180deg); }
+.faq-item.active { border-color: var(--primary-color); }
+
+
+/* =========================================
    FOOTER
    ========================================= */
 footer {
@@ -335,6 +391,34 @@ footer {
 @keyframes fadeOut { to { opacity: 0; transform: translateY(10px); } }
 
 /* =========================================
+   BOTÃO FLUTUANTE WHATSAPP
+   ========================================= */
+.float-whatsapp {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    bottom: 30px;
+    right: 30px;
+    background-color: #25d366;
+    color: #FFF;
+    border-radius: 50px;
+    text-align: center;
+    font-size: 30px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    animation: pulse-green 2s infinite;
+}
+
+.float-whatsapp:hover {
+    background-color: #128c7e;
+    transform: scale(1.1);
+}
+
+/* =========================================
    RESPONSIVO E MENU MOBILE
    ========================================= */
 .menu-toggle { display: none; }
@@ -382,37 +466,8 @@ footer {
     
     .cta-buttons { flex-direction: column; width: 100%; }
     .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
-}
-/* =========================================
-   BOTÃO FLUTUANTE WHATSAPP
-   ========================================= */
-.float-whatsapp {
-    position: fixed;
-    width: 60px;
-    height: 60px;
-    bottom: 30px;
-    right: 30px;
-    background-color: #25d366;
-    color: #FFF;
-    border-radius: 50px;
-    text-align: center;
-    font-size: 30px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s;
-    animation: pulse-green 2s infinite;
-}
 
-.float-whatsapp:hover {
-    background-color: #128c7e;
-    transform: scale(1.1);
-}
-
-/* Ajuste para não ficar em cima da notificação no celular */
-@media (max-width: 768px) {
+    /* Ajuste Botão Whats Mobile */
     .float-whatsapp {
         bottom: 20px;
         right: 20px;
