@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // ===============================================
-    // 1. MENU MOBILE (Consertado)
-    // ===============================================
+    // 1. MENU MOBILE
     const menuToggle = document.querySelector('.menu-toggle');
     const navLinks = document.querySelector('.nav-links');
     const navItems = document.querySelectorAll('.nav-links li');
@@ -10,8 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (menuToggle) {
         menuToggle.addEventListener('click', () => {
             navLinks.classList.toggle('active');
-            
-            // Troca ícone (Barras <-> X)
             const icon = menuToggle.querySelector('i');
             if(navLinks.classList.contains('active')){
                 icon.classList.remove('fa-bars');
@@ -23,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Fecha o menu ao clicar em um link
+    // Fecha menu ao clicar em link
     navItems.forEach(item => {
         item.addEventListener('click', () => {
             if(navLinks.classList.contains('active')){
@@ -35,9 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ===============================================
-    // 2. FAQ (Acordeão)
-    // ===============================================
+    // 2. FAQ ACORDEÃO
     const faqQuestions = document.querySelectorAll('.faq-question');
     faqQuestions.forEach(question => {
         question.addEventListener('click', () => {
@@ -46,50 +40,56 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ===============================================
-    // 3. BOTS / NOTIFICAÇÕES (Estava faltando isso!)
-    // ===============================================
-    const names = ["Carlos S.", "Eduardo M.", "Ana Paula", "Rogério T.", "Fernanda L.", "João Pedro", "Lucas B.", "Marcos V.", "Júlia C.", "Roberto A.", "Patrícia D."];
+    // 3. ANIMAÇÃO DE SCROLL
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = 1;
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    });
+    document.querySelectorAll('.card, .review-card').forEach(el => {
+        el.style.opacity = 0; el.style.transform = 'translateY(20px)';
+        el.style.transition = 'all 0.6s ease-out';
+        observer.observe(el);
+    });
+
+    // 4. BOTS DE NOTIFICAÇÃO
+    const names = ["Carlos S.", "Eduardo M.", "Ana P.", "Rogério T.", "Fernanda", "João P.", "Lucas B.", "Marcos V."];
     const actions = [
         { text: "Desbloqueou Conta Google", icon: "fa-unlock" },
         { text: "Removeu MDM/PayJoy", icon: "fa-file-invoice-dollar" },
-        { text: "Vendeu um Samsung S22", icon: "fa-hand-holding-usd" },
-        { text: "Solicitou orçamento", icon: "fa-comments" },
-        { text: "Vendeu iPhone 11", icon: "fa-mobile-alt" },
-        { text: "Desbloqueou Xiaomi Note 12", icon: "fa-shield-alt" }
+        { text: "Vendeu um S22 Ultra", icon: "fa-hand-holding-usd" },
+        { text: "Solicitou orçamento", icon: "fa-comments" }
     ];
-    const cities = ["Porto Velho", "Ji-Paraná", "Ariquemes", "Cacoal", "Vilhena", "Online"];
+    const cities = ["Porto Velho", "Ji-Paraná", "Ariquemes", "Cacoal", "Online"];
 
     function showNotification() {
         const container = document.getElementById('notification-container');
-        if(!container) return; // Se não achar o container, para aqui
+        if(!container) return;
 
-        const randomName = names[Math.floor(Math.random() * names.length)];
-        const randomAction = actions[Math.floor(Math.random() * actions.length)];
-        const randomCity = cities[Math.floor(Math.random() * cities.length)];
+        const rName = names[Math.floor(Math.random() * names.length)];
+        const rAction = actions[Math.floor(Math.random() * actions.length)];
+        const rCity = cities[Math.floor(Math.random() * cities.length)];
 
-        const notification = document.createElement('div');
-        notification.classList.add('notification-toast');
-        notification.innerHTML = `
-            <div class="toast-icon"><i class="fas ${randomAction.icon}"></i></div>
+        const notif = document.createElement('div');
+        notif.classList.add('notification-toast');
+        notif.innerHTML = `
+            <div class="toast-icon"><i class="fas ${rAction.icon}"></i></div>
             <div class="toast-content">
-                <h4>${randomName} - ${randomCity}</h4>
-                <p>${randomAction.text}</p>
+                <h4>${rName} - ${rCity}</h4>
+                <p>${rAction.text}</p>
             </div>
         `;
-
-        container.appendChild(notification);
-        
-        // Remove após 5 segundos
-        setTimeout(() => notification.remove(), 5000);
+        container.appendChild(notif);
+        setTimeout(() => notif.remove(), 5000);
     }
 
-    // Inicia os bots (Primeiro em 3s, depois a cada 8-15s)
     setTimeout(() => {
         showNotification();
         setInterval(() => {
             showNotification();
         }, Math.floor(Math.random() * (15000 - 8000 + 1) + 8000));
     }, 3000);
-
 });
