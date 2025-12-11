@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (signaturePad.isEmpty()) { alert("Assinatura obrigatória!"); return; }
         const btn = document.querySelector('.btn-generate');
         const txt = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...'; btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando na Nuvem...'; btn.disabled = true;
 
         const dados = {
             nome: document.getElementById('nome').value || "---",
@@ -68,11 +68,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // === AQUI ESTÁ A CORREÇÃO DO PDF ===
     window.criarArquivoPDF = (d, qr, id) => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         doc.setLineWidth(0.5); doc.setTextColor(0);
         
+        // Cabeçalho
         doc.setFont("helvetica", "bold"); doc.setFontSize(22);
         doc.text("NEXUS DIGITAL", 105, 20, null, null, "center");
         doc.setFontSize(10); doc.setFont("helvetica", "normal");
@@ -84,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(qr) doc.addImage(qr, 'PNG', 170, 10, 30, 30);
 
         let y = 55;
+        // Campos de Dados
         const campos = [
             { t: "DADOS DA TRANSAÇÃO", c: [`Data: ${d.dataFormatada}`, `Valor: R$ ${d.valor}`] },
             { t: "VENDEDOR", c: [`Nome: ${d.nome}`, `CPF: ${d.cpf}`, `Endereço: ${d.endereco}`] },
@@ -98,21 +101,40 @@ document.addEventListener('DOMContentLoaded', () => {
             y+=5;
         });
 
-        y+=10; doc.setFontSize(8);
-        doc.text("Declaro ser proprietário legítimo e isento a Nexus Digital de responsabilidade (Blacklist).", 20, y);
+        // --- CORREÇÃO: TERMOS LEGAIS COMPLETOS (VOLTARAM!) ---
+        y+=10; 
+        doc.setFont("helvetica", "bold"); doc.setFontSize(9);
+        doc.text("TERMOS E RESPONSABILIDADE LEGAL:", 20, y); y+=6;
         
-        y+=25;
+        doc.setFont("helvetica", "normal"); doc.setFontSize(8);
+        const termos = [
+            "1. O VENDEDOR declara ser o proprietário legítimo e que o bem é LÍCITO.",
+            "2. O VENDEDOR isenta o Grupo NEXUS DIGITAL de responsabilidade civil/criminal.",
+            "3. O VENDEDOR assume responsabilidade caso o aparelho entre em Blacklist (Roubo/Furto).",
+            "4. A posse é transferida neste ato, em caráter irrevogável."
+        ];
+        termos.forEach(t => { doc.text(t, 20, y); y+=5; });
+        
+        // Assinatura
+        y+=20;
         if(d.assinatura) { doc.rect(60, y-5, 90, 30); doc.addImage(d.assinatura, 'PNG', 75, y, 60, 25); }
         y+=30; doc.text("ASSINATURA DO VENDEDOR", 105, y, null, null, "center");
         
+        // --- CORREÇÃO: AVISO LEGAL NO RODAPÉ (VOLTOU!) ---
+        const avisoLegal = "Aviso Legal: A Destrava Cell repudia qualquer atividade ilícita. Realizamos consulta prévia de IMEI em todos os aparelhos. Não compramos e não desbloqueamos aparelhos com restrição de roubo ou furto (Blacklist).";
+        doc.setFontSize(7); doc.setTextColor(80);
+        // maxWidth garante que o texto quebre linha se for muito longo e fique centralizado
+        doc.text(avisoLegal, 105, 285, { maxWidth: 180, align: "center" });
+
         const safeName = d.nome ? d.nome.split(' ')[0].replace(/[^a-z0-9]/gi, '') : 'Recibo';
         doc.save(`Recibo_${safeName}.pdf`);
     };
 
+    // --- FUNÇÕES DE HISTÓRICO ---
     async function loadHistory() {
         const tb = document.querySelector('#history-table tbody');
         if(!tb) return;
-        tb.innerHTML = "<tr><td colspan='5' style='text-align:center'>Carregando...</td></tr>";
+        tb.innerHTML = "<tr><td colspan='5' style='text-align:center'>Carregando nuvem...</td></tr>";
         try {
             const res = await fetch('/api/recibos');
             const lista = await res.json();
@@ -138,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(e) { alert("Erro ao recuperar."); }
     };
     window.deletar = async (id) => {
-        if(confirm("Apagar?")) { await fetch(`/api/recibos/${id}`, {method:'DELETE'}); loadHistory(); }
+        if(confirm("Apagar permanentemente?")) { await fetch(`/api/recibos/${id}`, {method:'DELETE'}); loadHistory(); }
     };
 
 
@@ -282,7 +304,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.filtrarPrecos = () => {
         const termo = document.getElementById('searchInput').value.toLowerCase();
         const container = document.getElementById('results-container');
-        // Importante: Limpa o container e verifica se ele existe antes de usar
         if(!container) return;
         container.innerHTML = "";
 
