@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Gerar Recibo | Destrava Cell</title>
+    <title>Admin Nexus Digital | Destrava Cell</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -18,31 +18,24 @@
             color: #fff; border-radius: 8px; font-family: 'Poppins', sans-serif; 
         }
         input:focus { outline: none; border-color: var(--primary-color); }
-        
         .signature-wrapper { background: #fff; border-radius: 8px; overflow: hidden; margin-top: 10px; }
         canvas { display: block; width: 100%; height: 200px; cursor: crosshair; }
-        
         .btn-clear { background: #ff4444; color: #fff; border: none; padding: 5px 15px; border-radius: 4px; font-size: 0.8rem; margin-top: 5px; cursor: pointer; }
         .btn-generate { width: 100%; background: var(--primary-color); color: #000; font-weight: bold; padding: 15px; border: none; border-radius: 50px; font-size: 1.1rem; cursor: pointer; margin-top: 30px; transition: 0.3s; }
         .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(0,255,136,0.4); }
-
         .header-admin { text-align: center; margin-bottom: 30px; }
         .header-admin h2 { color: #fff; }
-        .header-admin p { color: #888; font-size: 0.9rem; }
-
-        /* Estilos do Histórico (Tabela) */
-        .history-section { margin-top: 40px; }
-        .history-header { color: #fff; margin-bottom: 15px; border-left: 4px solid var(--primary-color); padding-left: 10px; }
+        .header-admin h4 { color: var(--primary-color); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
         
+        /* Tabela Histórico */
+        .history-section { margin-top: 40px; border-top: 1px solid #333; padding-top: 20px; }
+        .history-header { color: #fff; margin-bottom: 15px; border-left: 4px solid var(--primary-color); padding-left: 10px; }
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; color: #ccc; font-size: 0.9rem; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
         th { background: #222; color: var(--primary-color); font-weight: 600; }
         tr:hover { background: #222; }
-        
-        .btn-reprint { background: transparent; border: 1px solid var(--primary-color); color: var(--primary-color); padding: 5px 10px; border-radius: 4px; cursor: pointer; transition: 0.3s; }
-        .btn-reprint:hover { background: var(--primary-color); color: #000; }
-        
+        .btn-reprint { background: transparent; border: 1px solid var(--primary-color); color: var(--primary-color); padding: 5px 10px; border-radius: 4px; cursor: pointer; }
         .btn-delete { color: #ff4444; background: transparent; border: none; cursor: pointer; font-size: 1.1rem; margin-left: 10px; }
     </style>
 </head>
@@ -50,12 +43,12 @@
 
     <div class="admin-container">
         <div class="header-admin">
+            <h4>Grupo Nexus Digital</h4>
             <h2><i class="fas fa-file-contract"></i> Painel Administrativo</h2>
-            <p>Gerador de Recibos & Controle de Vendas</p>
         </div>
 
         <div class="form-card">
-            <h4 style="color: var(--primary-color); margin-bottom: 15px;">Novo Recibo</h4>
+            <h4 style="color: var(--primary-color); margin-bottom: 15px;">Novo Recibo de Compra</h4>
             
             <div class="form-group">
                 <label>Nome do Cliente</label>
@@ -86,39 +79,39 @@
             </div>
             
             <div class="form-group">
-                <label>IMEI</label>
-                <input type="text" id="imei" placeholder="Digite *#06#">
+                <label>IMEI (Digite *#06#)</label>
+                <input type="text" id="imei" placeholder="IMEI do aparelho">
             </div>
             
             <div class="row" style="display: flex; gap: 10px;">
                 <div class="form-group" style="flex: 1;">
-                    <label>Valor (R$)</label>
+                    <label>Valor Pago (R$)</label>
                     <input type="number" id="valor" placeholder="0,00">
                 </div>
                 <div class="form-group" style="flex: 1;">
                     <label>Estado</label>
                     <select id="estado">
-                        <option value="Funcionando">Funcionando</option>
-                        <option value="Bloqueado Google">Bloq. Google</option>
-                        <option value="Bloqueado MDM">Bloq. MDM</option>
-                        <option value="Tela Quebrada">Tela Quebrada</option>
+                        <option value="Funcionando Perfeitamente">Funcionando Perfeitamente</option>
+                        <option value="Bloqueado Conta Google">Bloqueado Conta Google</option>
+                        <option value="Bloqueado MDM/Financeiro">Bloqueado MDM/Financeiro</option>
+                        <option value="Tela Quebrada / Defeito">Tela Quebrada / Defeito</option>
                     </select>
                 </div>
             </div>
 
-            <h4 style="color: var(--primary-color); margin-top: 20px;">Assinatura</h4>
+            <h4 style="color: var(--primary-color); margin-top: 20px;">Assinatura Digital</h4>
             <div class="signature-wrapper">
                 <canvas id="signature-pad"></canvas>
             </div>
-            <button class="btn-clear" id="clear-pad">Limpar</button>
+            <button class="btn-clear" id="clear-pad">Limpar Assinatura</button>
 
             <button class="btn-generate" onclick="gerarPDF()">
-                <i class="fas fa-save"></i> Salvar e Gerar Recibo
+                <i class="fas fa-save"></i> Salvar e Baixar PDF
             </button>
         </div>
 
         <div class="history-section">
-            <h3 class="history-header">Registros Salvos (Neste Dispositivo)</h3>
+            <h3 class="history-header">Histórico de Recibos (Salvos neste Dispositivo)</h3>
             <div class="table-responsive">
                 <table id="history-table">
                     <thead>
@@ -127,14 +120,13 @@
                             <th>Cliente</th>
                             <th>Aparelho</th>
                             <th>Valor</th>
-                            <th>Ação</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         </tbody>
                 </table>
             </div>
-            <p style="color: #666; font-size: 0.8rem; margin-top: 10px;">* Nota: Os dados ficam salvos apenas neste navegador. Se limpar o cache, eles somem.</p>
         </div>
 
     </div>
