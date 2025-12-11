@@ -6,109 +6,87 @@ const app = express();
 
 const port = process.env.PORT || 3000;
 const mongoURI = process.env.MONGO_URI;
-const ADMIN_PASSWORD = process.env.ADMIN_PASS || "nexus2025"; // Senha padrão se não configurar no .env
 
-// Conexão MongoDB
+// Conectar ao MongoDB
 if (!mongoURI) {
-    console.error("❌ ERRO: Configure a MONGO_URI no Render.");
+    console.error("❌ ERRO: A variável MONGO_URI não está definida no Render.");
 } else {
     mongoose.connect(mongoURI)
-        .then(() => console.log('✅ MongoDB Conectado!'))
-        .catch(err => console.error('❌ Erro Mongo:', err));
+        .then(() => console.log('✅ MongoDB Conectado com Sucesso!'))
+        .catch(err => console.error('❌ Erro de Conexão MongoDB:', err));
 }
 
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '10mb' })); // Limite alto para aceitar assinaturas
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- MODELS (Tabelas do Banco) ---
-
-// 1. Recibos (Já existia)
+// --- MODELO ---
 const ReciboSchema = new mongoose.Schema({
-    nome: String, cpf: String, rg: String, endereco: String,
-    modelo: String, imei: String, valor: String, estado: String,
+    nome: String,
+    cpf: String,
+    rg: String,
+    endereco: String,
+    modelo: String,
+    imei: String,
+    valor: String,
+    estado: String,
     assinatura: String,
     dataCriacao: { type: Date, default: Date.now },
-    dataFormatada: String, horaFormatada: String
+    dataFormatada: String,
+    horaFormatada: String
 });
+
 const Recibo = mongoose.model('Recibo', ReciboSchema);
 
-// 2. Financeiro (NOVO)
-const TransacaoSchema = new mongoose.Schema({
-    tipo: String, // 'entrada' ou 'saida'
-    categoria: String, // 'Serviço', 'Venda', 'Compra', 'Custo'
-    descricao: String,
-    valor: Number,
-    data: { type: Date, default: Date.now },
-    dataFormatada: String
-});
-const Transacao = mongoose.model('Transacao', TransacaoSchema);
+// --- ROTAS DA API ---
 
-// --- ROTAS API ---
-
-// Login Simples
-app.post('/api/login', (req, res) => {
-    const { senha } = req.body;
-    if (senha === ADMIN_PASSWORD) {
-        res.json({ auth: true });
-    } else {
-        res.status(401).json({ auth: false, erro: "Senha Incorreta" });
+// 1. Salvar Recibo
+app.post('/api/recibos', async (req, res) => {
+    try {
+        const novoRecibo = new Recibo(req.body);
+        const salvo = await novoRecibo.save();
+        res.status(201).json(salvo);
+    } catch (error) {
+        res.status(500).json({ erro: 'Erro ao salvar', detalhe: error.message });
     }
 });
 
-// === RECIBOS ===
-app.post('/api/recibos', async (req, res) => {
-    try {
-        const novo = new Recibo(req.body);
-        const salvo = await novo.save();
-        res.status(201).json(salvo);
-    } catch (e) { res.status(500).json({ erro: e.message }); }
-});
-
+// 2. Listar Todos (Para a tabela)
 app.get('/api/recibos', async (req, res) => {
     try {
-        const lista = await Recibo.find({}, 'nome modelo valor dataFormatada _id').sort({ dataCriacao: -1 });
-        res.json(lista);
-    } catch (e) { res.status(500).json({ erro: e.message }); }
+        // Traz apenas os campos essenciais para a tabela ficar leve
+        const recibos = await Recibo.find({}, 'nome modelo valor dataFormatada _id').sort({ dataCriacao: -1 });
+        res.json(recibos);
+    } catch (error) {
+        res.status(500).json({ erro: 'Erro ao listar' });
+    }
 });
 
+// 3. Buscar UM Recibo Específico (NOVA ROTA - CRUCIAL PARA O ERRO)
 app.get('/api/recibos/:id', async (req, res) => {
     try {
-        const item = await Recibo.findById(req.params.id);
-        res.json(item);
-    } catch (e) { res.status(500).json({ erro: e.message }); }
+        const recibo = await Recibo.findById(req.params.id);
+        if (!recibo) return res.status(404).json({ erro: 'Recibo não encontrado' });
+        res.json(recibo);
+    } catch (error) {
+        res.status(500).json({ erro: 'Erro ao buscar recibo único' });
+    }
 });
 
+// 4. Deletar Recibo
 app.delete('/api/recibos/:id', async (req, res) => {
     try {
         await Recibo.findByIdAndDelete(req.params.id);
-        res.json({ ok: true });
-    } catch (e) { res.status(500).json({ erro: e.message }); }
-});
-
-// === FINANCEIRO (NOVO) ===
-app.post('/api/financeiro', async (req, res) => {
-    try {
-        const novaTransacao = new Transacao(req.body);
-        const salva = await novaTransacao.save();
-        res.status(201).json(salva);
-    } catch (e) { res.status(500).json({ erro: e.message }); }
-});
-
-app.get('/api/financeiro', async (req, res) => {
-    try {
-        const lista = await Transacao.find().sort({ data: -1 }).limit(50); // Últimas 50
-        res.json(lista);
-    } catch (e) { res.status(500).json({ erro: e.message }); }
-});
-
-app.delete('/api/financeiro/:id', async (req, res) => {
-    try {
-        await Transacao.findByIdAndDelete(req.params.id);
-        res.json({ ok: true });
-    } catch (e) { res.status(500).json({ erro: e.message }); }
+        res.json({ mensagem: 'Deletado com sucesso' });
+    } catch (error) {
+        res.status(500).json({ erro: 'Erro ao deletar' });
+    }
 });
 
 // Front-end
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
-app.listen(port, () => console.log(`🚀 Server on port ${port}`));
+app.listen(port, () => {
+    console.log(`🚀 Servidor rodando na porta ${port}`);
+});
