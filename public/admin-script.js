@@ -13,17 +13,16 @@ document.addEventListener('DOMContentLoaded', () => {
     resizeCanvas();
     document.getElementById('clear-pad').addEventListener('click', () => signaturePad.clear());
 
-    // Carrega o histórico DO BANCO DE DADOS ao abrir
+    // Carrega o histórico
     loadHistory();
 
-    // === FUNÇÃO GERAR E SALVAR (CONECTADA AO MONGO) ===
+    // === GERAR E SALVAR NO BANCO ===
     window.gerarPDF = async () => {
         if (signaturePad.isEmpty()) { alert("Assinatura obrigatória!"); return; }
 
-        // Muda o botão para avisar que está processando
         const btn = document.querySelector('.btn-generate');
-        const textoOriginal = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando para Nuvem...';
+        const txtOriginal = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando na Nuvem...';
         btn.disabled = true;
 
         const dadosFormulario = {
@@ -41,42 +40,41 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            // 1. Tenta Salvar no MongoDB via API (Essa é a parte mágica)
             const resposta = await fetch('/api/recibos', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dadosFormulario)
             });
 
-            if (!resposta.ok) throw new Error('Erro na conexão com o servidor');
+            if (!resposta.ok) throw new Error('Falha ao comunicar com o servidor');
             
-            const dadosSalvos = await resposta.json(); 
+            const dadosSalvos = await resposta.json();
 
-            // 2. Se deu certo, gera o PDF
+            // Gera o PDF
             gerarQRCodeEPDF(dadosSalvos);
 
-            alert("✅ Sucesso! Recibo salvo na nuvem e sincronizado.");
+            alert("✅ Recibo salvo e sincronizado com sucesso!");
             
-            // Limpeza
+            // Limpa tudo
             signaturePad.clear();
             document.getElementById('nome').value = "";
             document.getElementById('modelo').value = "";
             document.getElementById('imei').value = "";
             document.getElementById('valor').value = "";
             
-            // Recarrega a tabela buscando do banco
+            // Atualiza a tabela
             loadHistory();
 
         } catch (error) {
             console.error(error);
-            alert("❌ Erro ao salvar na nuvem: " + error.message);
+            alert("❌ Erro ao salvar: " + error.message);
         } finally {
-            btn.innerHTML = textoOriginal;
+            btn.innerHTML = txtOriginal;
             btn.disabled = false;
         }
     };
 
-    // === LÓGICA DE PDF + QR CODE ===
+    // === PDF + QR CODE ===
     function gerarQRCodeEPDF(dados) {
         const idRecibo = dados._id || Date.now();
         const qrData = `NEXUS DIGITAL\nID: ${idRecibo}\nIMEI: ${dados.imei}\nVALOR: R$ ${dados.valor}`;
@@ -96,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
+        // Estilos
         doc.setLineWidth(0.5); doc.setDrawColor(0); doc.setTextColor(0);
 
         // Cabeçalho
@@ -111,18 +110,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if(qrImg) doc.addImage(qrImg, 'PNG', 170, 10, 30, 30);
 
         let y = 50;
+        
+        // Tratamento de segurança para dados vazios
+        const nomeCliente = d.nome || "Cliente";
+        const dataShow = d.dataFormatada || "--/--/--";
+        const horaShow = d.horaFormatada || "--:--";
 
         // Bloco Transação
         doc.setFillColor(240, 240, 240); doc.rect(15, y, 180, 10, 'F');
         doc.setFontSize(10); doc.setFont("helvetica", "bold");
         doc.text("DADOS DA TRANSAÇÃO", 20, y+7); y += 15;
         doc.setFontSize(10); doc.setFont("helvetica", "normal");
-        
-        // Se a data vier do banco (formatada) ou direta
-        const dataExibicao = d.dataFormatada || d.data || "--/--/----";
-        const horaExibicao = d.horaFormatada || d.hora || "--:--";
-        
-        doc.text(`Data: ${dataExibicao} às ${horaExibicao}`, 20, y);
+        doc.text(`Data: ${dataShow} às ${horaShow}`, 20, y);
         doc.text(`ID Cloud: #${idRecibo.toString().slice(-6)}`, 120, y); 
         y += 10;
         doc.setFont("helvetica", "bold"); doc.text(`VALOR PAGO: R$ ${d.valor}`, 20, y); y += 15;
@@ -131,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.setFillColor(240, 240, 240); doc.rect(15, y, 180, 10, 'F');
         doc.text("IDENTIFICAÇÃO DO VENDEDOR", 20, y+7); y += 15;
         doc.setFont("helvetica", "normal");
-        doc.text(`Nome: ${d.nome}`, 20, y); y += 6;
+        doc.text(`Nome: ${nomeCliente}`, 20, y); y += 6;
         doc.text(`CPF: ${d.cpf} / RG: ${d.rg}`, 20, y); y += 6;
         doc.text(`Endereço: ${d.endereco}`, 20, y); y += 15;
 
@@ -168,37 +167,33 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(100);
         doc.text("Aviso Legal: A Destrava Cell e o Grupo Nexus Digital repudiam atividades ilícitas. Realizamos consulta prévia de IMEI.", 105, 285, null, null, "center");
 
-        doc.save(`Recibo_Nexus_${d.nome.split(' ')[0]}.pdf`);
+        // Nome do arquivo seguro
+        const safeName = nomeCliente.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        doc.save(`Recibo_Nexus_${safeName}.pdf`);
     };
 
-    // === FUNÇÕES DO BANCO DE DADOS ===
+    // === FUNÇÕES DE DADOS (API) ===
     
     async function loadHistory() {
         const tbody = document.querySelector('#history-table tbody');
-        
-        // Se o elemento não existir na página, para (evita erros no console)
         if(!tbody) return;
 
-        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center'>🔄 Buscando dados na nuvem...</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center'>🔄 Buscando dados...</td></tr>";
 
         try {
-            const res = await fetch('/api/recibos'); // Chama o Back-end
-            
-            if (!res.ok) throw new Error("Falha ao conectar na API");
-            
+            const res = await fetch('/api/recibos');
+            if (!res.ok) throw new Error("Erro na API");
             const recibos = await res.json();
 
             tbody.innerHTML = "";
             if (recibos.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px;'>Nenhum registro no banco de dados.</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px;'>Nenhum registro encontrado.</td></tr>";
                 return;
             }
 
             recibos.forEach(item => {
                 const tr = document.createElement('tr');
-                // Garante que mostre data formatada ou data bruta
-                const dataShow = item.dataFormatada || new Date(item.dataCriacao).toLocaleDateString();
-
+                const dataShow = item.dataFormatada || "--/--";
                 tr.innerHTML = `
                     <td>${dataShow}</td>
                     <td>${item.nome}</td>
@@ -213,25 +208,31 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (error) {
             console.error(error);
-            tbody.innerHTML = "<tr><td colspan='5' style='color:red; text-align:center'>❌ Erro ao conectar ao banco de dados. Verifique a conexão.</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='5' style='color:red; text-align:center'>Erro de conexão com o Banco de Dados.</td></tr>";
         }
     }
 
-    // Função global para ser acessada pelo HTML
+    // --- AQUI ESTAVA O ERRO, AGORA ESTÁ CORRIGIDO ---
     window.reimprimir = async (id) => {
         try {
-            const res = await fetch('/api/recibos'); 
-            const recibos = await res.json();
-            const item = recibos.find(r => r._id === id);
+            // Busca APENAS o recibo específico pelo ID (Rota nova)
+            const res = await fetch(`/api/recibos/${id}`);
             
-            if (item) {
-                gerarQRCodeEPDF(item);
-            }
-        } catch (e) { alert("Erro ao recuperar dados."); }
+            if (!res.ok) throw new Error("Recibo não encontrado ou erro no servidor.");
+            
+            const item = await res.json();
+            
+            // Gera o PDF com os dados que vieram do banco
+            gerarQRCodeEPDF(item);
+
+        } catch (e) { 
+            console.error(e);
+            alert("Erro ao recuperar PDF: " + e.message); 
+        }
     };
 
     window.deletar = async (id) => {
-        if(confirm("Tem certeza que deseja apagar este registro PERMANENTEMENTE do banco de dados?")) {
+        if(confirm("Apagar este registro permanentemente?")) {
             try {
                 await fetch(`/api/recibos/${id}`, { method: 'DELETE' });
                 loadHistory(); 
