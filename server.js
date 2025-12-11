@@ -1,46 +1,83 @@
+require('dotenv').config();
 const express = require('express');
+const mongoose = require('mongoose');
 const path = require('path');
 const app = express();
 
-// =======================================================
-// CONFIGURAÇÕES DO SERVIDOR
-// =======================================================
-
-// Define a porta: O Render usa a variável process.env.PORT automaticamente.
-// Se estiver rodando no seu PC, ele usa a porta 3000.
+// --- CONFIGURAÇÃO ---
 const port = process.env.PORT || 3000;
+const mongoURI = process.env.MONGO_URI; // Pega o link do Render ou arquivo .env
 
-// =======================================================
-// MIDDLEWARE (Arquivos Estáticos)
-// =======================================================
+// Conectar ao MongoDB
+if (!mongoURI) {
+    console.error("ERRO: A variável MONGO_URI não está definida.");
+} else {
+    mongoose.connect(mongoURI)
+        .then(() => console.log('✅ MongoDB Conectado com Sucesso!'))
+        .catch(err => console.error('❌ Erro ao conectar no MongoDB:', err));
+}
 
-// Diz ao Express para servir os arquivos da pasta 'public' (HTML, CSS, JS, Imagens)
+// Middleware para ler JSON
+app.use(express.json({ limit: '10mb' })); // Limite aumentado para aceitar assinaturas Base64
 app.use(express.static(path.join(__dirname, 'public')));
 
-// =======================================================
-// ROTAS
-// =======================================================
+// --- MODELO DO BANCO DE DADOS (SCHEMA) ---
+const ReciboSchema = new mongoose.Schema({
+    nome: String,
+    cpf: String,
+    rg: String,
+    endereco: String,
+    modelo: String,
+    imei: String,
+    valor: String,
+    estado: String,
+    assinatura: String, // Salva a imagem em Base64
+    dataCriacao: { type: Date, default: Date.now }, // Data real do sistema
+    dataFormatada: String, // Data para exibição (DD/MM/AAAA)
+    horaFormatada: String  // Hora para exibição
+});
 
-// Rota Principal: Quando acessarem o site, entrega o index.html
-app.get('/', (req, res) => {
+const Recibo = mongoose.model('Recibo', ReciboSchema);
+
+// --- ROTAS DA API (O Front-end vai chamar aqui) ---
+
+// 1. Salvar novo recibo
+app.post('/api/recibos', async (req, res) => {
+    try {
+        const novoRecibo = new Recibo(req.body);
+        const salvo = await novoRecibo.save();
+        res.status(201).json(salvo);
+    } catch (error) {
+        res.status(500).json({ erro: 'Erro ao salvar recibo', detalhe: error.message });
+    }
+});
+
+// 2. Listar todos os recibos (do mais novo para o mais antigo)
+app.get('/api/recibos', async (req, res) => {
+    try {
+        const recibos = await Recibo.find().sort({ dataCriacao: -1 });
+        res.json(recibos);
+    } catch (error) {
+        res.status(500).json({ erro: 'Erro ao buscar recibos' });
+    }
+});
+
+// 3. Deletar recibo
+app.delete('/api/recibos/:id', async (req, res) => {
+    try {
+        await Recibo.findByIdAndDelete(req.params.id);
+        res.json({ mensagem: 'Recibo deletado com sucesso' });
+    } catch (error) {
+        res.status(500).json({ erro: 'Erro ao deletar' });
+    }
+});
+
+// Rota padrão para o site
+app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Rota de Segurança (Wildcard):
-// Se o usuário tentar acessar qualquer página que não existe (ex: /login, /admin),
-// redireciona ele de volta para a Home. Isso evita erros de "Cannot GET".
-app.get('*', (req, res) => {
-    res.redirect('/');
-});
-
-// =======================================================
-// INICIALIZAÇÃO
-// =======================================================
-
+// --- INICIAR SERVIDOR ---
 app.listen(port, () => {
-    console.log(`==================================================`);
-    console.log(`🚀 Servidor DESTRAVA CELL iniciado com sucesso!`);
-    console.log(`📡 Rodando na porta: ${port}`);
-    console.log(`👉 Local: http://localhost:${port}`);
-    console.log(`==================================================`);
+    console.log(`🚀 Servidor Nexus Digital rodando na porta ${port}`);
 });
