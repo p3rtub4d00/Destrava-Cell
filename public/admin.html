@@ -7,11 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <script>
+        fetch('/api/check-auth').then(r => { if(r.status !== 200) window.location.href = 'login.html'; });
+    </script>
     <style>
         body { background: #0f0f0f; padding-bottom: 50px; }
-        .admin-container { max-width: 800px; margin: 20px auto; padding: 20px; }
+        .admin-container { max-width: 900px; margin: 20px auto; padding: 20px; }
         
-        /* MENU DE ABAS */
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab-btn {
             flex: 1; padding: 15px; background: #1a1a1a; border: 1px solid #333; color: #888;
@@ -21,7 +23,7 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s; }
 
-        /* FORMULÁRIO */
+        /* Estilos mantidos do original... */
         .form-card { background: #1a1a1a; padding: 25px; border-radius: 15px; border: 1px solid #333; margin-bottom: 30px; }
         .form-group { margin-bottom: 20px; }
         label { display: block; color: #fff; margin-bottom: 8px; font-size: 0.9rem; }
@@ -39,7 +41,6 @@
 
         #qrcode-container { display: none; }
 
-        /* TABELA DE HISTÓRICO MELHORADA */
         .history-section { margin-top: 40px; border-top: 1px solid #333; padding-top: 20px; }
         .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid #333; }
         table { width: 100%; border-collapse: collapse; color: #ccc; font-size: 0.9rem; background: #1a1a1a; }
@@ -50,7 +51,6 @@
         .btn-reprint { background: transparent; border: 1px solid var(--primary-color); color: var(--primary-color); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; margin-right: 5px; }
         .btn-delete { color: #ff4444; background: transparent; border: 1px solid #ff4444; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
 
-        /* BUSCA DE PREÇOS ESTILIZADA */
         .search-box { position: relative; margin-bottom: 25px; }
         .search-box input { padding-left: 50px; height: 55px; font-size: 1.1rem; background: #1a1a1a; border-radius: 50px; border: 2px solid #333; transition: 0.3s; }
         .search-box input:focus { border-color: var(--primary-color); box-shadow: 0 0 15px rgba(0,255,136,0.1); }
@@ -58,21 +58,15 @@
         
         #results-container { display: grid; gap: 15px; }
         
-        .price-card {
-            background: #1a1a1a; border: 1px solid #333; padding: 20px;
-            border-radius: 12px; animation: slideIn 0.3s ease; position: relative; overflow: hidden;
-        }
+        .price-card { background: #1a1a1a; border: 1px solid #333; padding: 20px; border-radius: 12px; animation: slideIn 0.3s ease; position: relative; overflow: hidden; }
         .price-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary-color); }
-        
         .model-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .model-name { font-size: 1.1rem; font-weight: bold; color: #fff; }
         .brand-badge { font-size: 0.7rem; background: #333; padding: 4px 8px; border-radius: 4px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
-        
         .price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .price-box { background: #111; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #2a2a2a; }
         .price-label { font-size: 0.7rem; color: #888; display: block; margin-bottom: 4px; text-transform: uppercase; }
         .price-value { font-size: 1.1rem; font-weight: bold; color: #fff; display: block; }
-        
         .val-service { color: var(--primary-color); text-shadow: 0 0 5px rgba(0,255,136,0.2); }
         .val-buy-ok { color: var(--secondary-color); }
         .val-buy-bad { color: #ffaa00; }
@@ -84,14 +78,18 @@
 </head>
 <body>
     <div class="admin-container">
-        <div style="text-align:center; margin-bottom:20px;">
-            <h4 style="color:var(--primary-color); text-transform: uppercase; letter-spacing: 2px;">Grupo Nexus Digital</h4>
-            <h2 style="color:#fff;">Painel Administrativo</h2>
+        <div class="header-admin">
+            <div>
+                <h4 style="color:var(--primary-color); text-transform: uppercase; letter-spacing: 2px; margin:0;">Grupo Nexus Digital</h4>
+                <h2 style="color:#fff; margin:0;">Painel Administrativo</h2>
+            </div>
+            <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
         </div>
 
         <div class="tabs">
             <div class="tab-btn active" onclick="switchTab('recibo')"><i class="fas fa-file-contract"></i> Gerar Recibo</div>
-            <div class="tab-btn" onclick="switchTab('precos')"><i class="fas fa-search-dollar"></i> Consultar Preços</div>
+            <div class="tab-btn" onclick="switchTab('financeiro')"><i class="fas fa-chart-line"></i> Financeiro</div>
+            <div class="tab-btn" onclick="switchTab('precos')"><i class="fas fa-search-dollar"></i> Preços</div>
         </div>
 
         <div id="tab-recibo" class="tab-content active">
@@ -140,6 +138,55 @@
             </div>
         </div>
 
+        <div id="tab-financeiro" class="tab-content">
+            <div class="finance-dashboard">
+                <div class="fin-card">
+                    <h3>Saldo Total</h3>
+                    <div class="value" id="dash-saldo">R$ 0,00</div>
+                </div>
+                <div class="fin-card">
+                    <h3>Entradas (Mês)</h3>
+                    <div class="value text-green" id="dash-entradas">R$ 0,00</div>
+                </div>
+                <div class="fin-card">
+                    <h3>Saídas (Mês)</h3>
+                    <div class="value text-red" id="dash-saidas">R$ 0,00</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <h4 style="color: var(--primary-color); margin-bottom: 15px;">Novo Lançamento</h4>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <div class="form-group" style="flex:2;">
+                        <label>Descrição</label>
+                        <input type="text" id="fin-desc" placeholder="Ex: Venda Película, Compra Tela...">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Valor (R$)</label>
+                        <input type="number" id="fin-valor" placeholder="0.00">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Tipo</label>
+                        <select id="fin-tipo">
+                            <option value="entrada">Entrada (+)</option>
+                            <option value="saida">Saída (-)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-generate" style="margin-top:0;" onclick="salvarFinanceiro()">Adicionar Lançamento</button>
+            </div>
+
+            <div class="history-section">
+                <h3 style="color:#fff; margin-bottom:15px;">Extrato Financeiro</h3>
+                <div class="table-responsive">
+                    <table id="finance-table">
+                        <thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Ação</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div id="tab-precos" class="tab-content">
             <div class="search-box">
                 <i class="fas fa-search"></i>
@@ -160,9 +207,16 @@
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + tabName).classList.add('active');
-            // Procura o botão clicado comparando o texto ou o onclick para adicionar a classe active corretamente
-            // Simplificando: o event.target já resolve
-            if(event) event.currentTarget.classList.add('active');
+            
+            // Corrige bug do canvas quando a aba estava oculta
+            if(tabName === 'recibo') {
+                window.dispatchEvent(new Event('resize')); 
+            }
+            if(tabName === 'financeiro') {
+                carregarFinanceiro(); // Função no admin-script.js
+            }
+            
+            if(event && event.currentTarget) event.currentTarget.classList.add('active');
         }
     </script>
 </body>
