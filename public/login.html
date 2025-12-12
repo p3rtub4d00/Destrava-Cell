@@ -11,7 +11,7 @@
     
     <div class="login-container" style="background:#1a1a1a; padding:40px; border-radius:15px; border:1px solid #333; max-width:400px; width:100%; text-align:center;">
         <h2 style="color:var(--primary-color); text-transform:uppercase; margin-bottom:10px;">Nexus Admin</h2>
-        <p style="color:#ccc; margin-bottom:30px;">Acesso restrito à equipe.</p>
+        <p style="color:#ccc; margin-bottom:30px;">Acesso restrito à equipe Destrava Cell.</p>
         
         <form id="loginForm">
             <input type="text" id="user" placeholder="Usuário" style="margin-bottom:15px;" required>
@@ -30,6 +30,7 @@
             const password = document.getElementById('pass').value;
 
             btn.innerHTML = 'Verificando...';
+            btn.disabled = true;
             msg.innerText = '';
 
             try {
@@ -44,10 +45,12 @@
                     const data = await res.json();
                     msg.innerText = data.erro || "Erro ao entrar.";
                     btn.innerHTML = 'Entrar';
+                    btn.disabled = false;
                 }
             } catch (err) {
                 msg.innerText = "Erro de conexão.";
                 btn.innerHTML = 'Entrar';
+                btn.disabled = false;
             }
         });
     </script>
