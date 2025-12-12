@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Nexus Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="display:flex; justify-content:center; align-items:center; height:100vh; background: #050505;">
+    
+    <div class="login-container" style="background:#1a1a1a; padding:40px; border-radius:15px; border:1px solid #333; max-width:400px; width:100%; text-align:center;">
+        <h2 style="color:var(--primary-color); text-transform:uppercase; margin-bottom:10px;">Nexus Admin</h2>
+        <p style="color:#ccc; margin-bottom:30px;">Acesso restrito à equipe.</p>
+        
+        <form id="loginForm">
+            <input type="text" id="user" placeholder="Usuário" style="margin-bottom:15px;" required>
+            <input type="password" id="pass" placeholder="Senha" style="margin-bottom:20px;" required>
+            <button type="submit" class="btn-primary" style="width:100%; justify-content:center;">Entrar</button>
+        </form>
+        <p id="msg" style="color:#ff4444; margin-top:15px; font-size:0.9rem;"></p>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const msg = document.getElementById('msg');
+            const username = document.getElementById('user').value;
+            const password = document.getElementById('pass').value;
+
+            btn.innerHTML = 'Verificando...';
+            msg.innerText = '';
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username, password })
+                });
+
+                if(res.ok) {
+                    window.location.href = 'admin.html';
+                } else {
+                    const data = await res.json();
+                    msg.innerText = data.erro || "Erro ao entrar.";
+                    btn.innerHTML = 'Entrar';
+                }
+            } catch (err) {
+                msg.innerText = "Erro de conexão.";
+                btn.innerHTML = 'Entrar';
+            }
+        });
+    </script>
+</body>
+</html>
