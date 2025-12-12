@@ -69,7 +69,7 @@ async function criarAdminPadrao() {
     try {
         const adminExiste = await User.findOne({ username: 'admin' });
         if (!adminExiste) {
-            const hash = await bcrypt.hash('admin123', 10);
+            const hash = await bcrypt.hash('rafaelRAMOS28', 10);
             await User.create({ username: 'admin', password: hash });
             console.log('🔐 Usuário ADMIN criado: admin / admin123');
         }
