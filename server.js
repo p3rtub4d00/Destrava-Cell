@@ -6,7 +6,7 @@ const app = express();
 
 const port = process.env.PORT || 3000;
 const mongoURI = process.env.MONGO_URI;
-const ADMIN_PASSWORD = process.env.ADMIN_PASS || "admin123"; // SENHA PADRÃO: admin123 (Mude no .env)
+const ADMIN_PASSWORD = process.env.ADMIN_PASS || "rafaelRAMOS28"; // SENHA PADRÃO: admin123 (Mude no .env)
 
 // Conectar ao MongoDB
 if (!mongoURI) {
