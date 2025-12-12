@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { display: flex; align-items: center; justify-content: center; height: 100vh; background: #0f0f0f; }
+        .login-card { background: #1a1a1a; padding: 40px; border-radius: 15px; border: 1px solid #333; text-align: center; width: 350px; }
+        input { width: 100%; padding: 12px; margin: 15px 0; background: #111; border: 1px solid #444; color: #fff; border-radius: 8px; }
+        button { width: 100%; padding: 12px; background: #00ff88; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; }
+        .error { color: #ff4444; font-size: 0.9rem; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2 style="color:#fff; margin-bottom: 20px;">Acesso Restrito</h2>
+        <input type="password" id="password" placeholder="Senha Mestra">
+        <button onclick="fazerLogin()">ENTRAR</button>
+        <p id="msg-erro" class="error">Senha incorreta.</p>
+    </div>
+
+    <script>
+        async function fazerLogin() {
+            const senha = document.getElementById('password').value;
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ password: senha })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                localStorage.setItem('adminToken', data.token);
+                window.location.href = 'admin.html';
+            } else {
+                document.getElementById('msg-erro').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
